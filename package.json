@@ -1,50 +1,55 @@
 {
   "name": "typescript-action",
-  "description": "GitHub Actions TypeScript template",
   "version": "0.0.0",
-  "author": "",
   "private": true,
-  "homepage": "https://github.com/actions/typescript-action",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
-  },
-  "bugs": {
-    "url": "https://github.com/actions/typescript-action/issues"
-  },
+  "description": "GitHub Actions TypeScript template",
   "keywords": [
     "actions",
     "node",
     "setup"
   ],
+  "homepage": "https://github.com/actions/typescript-action",
+  "bugs": {
+    "url": "https://github.com/actions/typescript-action/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/actions/typescript-action.git"
+  },
+  "license": "MIT",
+  "author": "",
   "exports": {
     ".": "./dist/index.js"
   },
-  "engines": {
-    "node": ">=20"
-  },
   "scripts": {
+    "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package",
     "bundle": "npm run format:write && npm run package",
     "ci-test": "npx jest",
     "coverage": "npx make-coverage-badge --output-path ./badges/coverage.svg",
-    "format:write": "npx prettier --write .",
     "format:check": "npx prettier --check .",
+    "format:write": "npx prettier --write .",
     "lint": "npx eslint . -c ./.github/linters/.eslintrc.yml",
     "package": "npx ncc build src/index.ts -o dist --source-map --license licenses.txt",
     "package:watch": "npm run package -- --watch",
-    "test": "npx jest",
-    "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package"
+    "test": "npx jest"
   },
-  "license": "MIT",
   "jest": {
-    "preset": "ts-jest",
-    "verbose": true,
     "clearMocks": true,
-    "testEnvironment": "node",
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "./src/**"
+    ],
+    "coverageReporters": [
+      "json-summary",
+      "text",
+      "lcov"
+    ],
     "moduleFileExtensions": [
       "js",
       "ts"
     ],
+    "preset": "ts-jest",
+    "testEnvironment": "node",
     "testMatch": [
       "**/*.test.ts"
     ],
@@ -55,15 +60,7 @@
     "transform": {
       "^.+\\.ts$": "ts-jest"
     },
-    "coverageReporters": [
-      "json-summary",
-      "text",
-      "lcov"
-    ],
-    "collectCoverage": true,
-    "collectCoverageFrom": [
-      "./src/**"
-    ]
+    "verbose": true
   },
   "dependencies": {
     "@actions/core": "^1.10.1"
@@ -86,5 +83,8 @@
     "prettier-eslint": "^16.3.0",
     "ts-jest": "^29.1.5",
     "typescript": "^5.5.3"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

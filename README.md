@@ -38,6 +38,23 @@ jobs:
 
 ```
 
+The `collection-sync-configs` input should be a JSON string representing an array of collections, each with a name, query, and filters. For example:
+
+```json
+[
+  {
+    "name": "my-collection",
+    "query": "github actions",
+    "filters": "app:github"
+  },
+  {
+    "name": "my-github-pages-site",
+    "query": "",
+    "filters": "app:github type:page repository:my-repo"
+  }
+]
+```
+
 <!-- action-docs-inputs source="action.yml" -->
 
 ## Inputs
@@ -47,9 +64,7 @@ jobs:
 | `glean-client-api-url`   | <p>Glean client API URL</p>                                                | `true`   | `""`    |
 | `glean-client-api-token` | <p>Glean client API token</p>                                              | `true`   | `""`    |
 | `glean-user-email`       | <p>Glean user email on whose behalf the request is intended to be made</p> | `true`   | `""`    |
-| `collection-name`        | <p>Name of the collection</p>                                              | `true`   | `""`    |
-| `query`                  | <p>Search query</p>                                                        | `false`  | `""`    |
-| `filters`                | <p>Search filters</p>                                                      | `false`  | `""`    |
+| `collection-sync-configs`| <p>JSON array of collections, each with name, query, and filters</p>       | `true`   | `""`    |
 
 <!-- action-docs-inputs source="action.yml" -->
 

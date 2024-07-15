@@ -31,7 +31,8 @@
     "lint": "npx eslint . -c ./.github/linters/.eslintrc.yml",
     "package": "npx ncc build src/index.ts -o dist --source-map --license licenses.txt",
     "package:watch": "npm run package -- --watch",
-    "test": "npx jest"
+    "test": "npx jest",
+    "release": "./script/release"
   },
   "jest": {
     "clearMocks": true,

@@ -1,82 +1,87 @@
 import axios, { AxiosInstance } from 'axios';
+import { FilterDict, CollectionResponse, Collection } from './types';
 
-interface Config {
-  GLEAN_CLIENT_API_URL: string;
-  GLEAN_CLIENT_API_TOKEN: string;
-  USE_KRAKEN_PROXY: boolean;
-  KRAKEN_PROXY: { https: string };
-}
-
-interface Document {
-  id: string;
-  title: string;
-  url: string;
-}
-
-interface Filter {
-  value: string;
-  relationType: string;
-}
-
-interface FilterDict {
-  [key: string]: Filter[];
-}
-
-interface CollectionResponse {
-  errorCode?: string;
-  id?: string;
-  collections?: Collection[];
-}
-
-interface Collection {
-  id: string;
-  name: string;
-}
-
+/**
+ * Manages collections within the Glean application, providing functionality for
+ * creating, updating, and syncing collections based on search queries and filters.
+ */
 export default class CollectionsManager {
   private gleanClientApiUrl: string;
   private gleanClientApiToken: string;
+  private gleanUserEmail: string;
   private client: AxiosInstance;
 
-  constructor() {
+  /**
+   * Creates an instance of CollectionsManager.
+   * @param {string} gleanClientApiUrl - The API URL for the Glean client.
+   * @param {string} gleanClientApiToken - The API token for the Glean client.
+   * @param {string} gleanUserEmail - The email of the Glean user.
+   */
+  constructor(
+    gleanClientApiUrl: string,
+    gleanClientApiToken: string,
+    gleanUserEmail: string
+  ) {
     this.gleanClientApiUrl = gleanClientApiUrl;
     this.gleanClientApiToken = gleanClientApiToken;
+    this.gleanUserEmail = gleanUserEmail;
     this.client = this.getClient();
   }
 
+  /**
+   * Initializes and returns an Axios client instance with the appropriate headers.
+   * @returns {AxiosInstance} - The configured Axios client instance.
+   */
   private getClient(): AxiosInstance {
     const client = axios.create({
       headers: {
         Authorization: `Bearer ${this.gleanClientApiToken}`,
         'Content-Type': 'application/json',
-        'X-Scio-Actas': 'scalvert@linkedin.com'
+        'X-Scio-Actas': this.gleanUserEmail
       }
     });
 
     return client;
   }
 
+  /**
+   * Constructs and returns the full API URL for a given path.
+   * @param {string} path - The API endpoint path.
+   * @returns {string} - The full API URL.
+   */
   private getUrl(path: string): string {
     return `${this.gleanClientApiUrl}/${path}`;
   }
 
+  /**
+   * Parses a filters string into a FilterDict object.
+   * @param {string} filters - The filters string to parse.
+   * @returns {FilterDict} - The parsed filters dictionary.
+   */
   private parseFilters(filters: string): FilterDict {
     const filterDict: FilterDict = {};
 
     if (filters) {
-      filters.split(' ').forEach((part) => {
+      for (const part of filters.split(' ')) {
         const [key, value] = part.split(':');
+
         if (filterDict[key]) {
           filterDict[key].push({ value, relationType: 'EQUALS' });
         } else {
           filterDict[key] = [{ value, relationType: 'EQUALS' }];
         }
-      });
+      }
     }
 
     return filterDict;
   }
 
+  /**
+   * Creates the API payload for a search query and filters.
+   * @param {string} query - The search query.
+   * @param {string} filters - The filters to apply to the search.
+   * @returns {Record<string, any>} - The payload object for the API request.
+   */
   private createApiPayload(
     query: string,
     filters: string
@@ -99,21 +104,35 @@ export default class CollectionsManager {
     return payload;
   }
 
-  private async callSearchApi(
-    payload: Record<string, any>
+  /**
+   * Executes a search query with the specified filters and returns the search results.
+   * @param {string} query - The search query.
+   * @param {string} filters - The filters to apply to the search.
+   * @returns {Promise<Record<string, any>>} - The search results.
+   */
+  private async doSearch(
+    query: string,
+    filters: string
   ): Promise<Record<string, any>> {
     const url = this.getUrl('search');
+    const payload = this.createApiPayload(query, filters);
     const response = await this.client.post(url, payload);
-    this.logRequestDetails(response);
+
     return response.data;
   }
 
+  /**
+   * Extracts document details from the search result items.
+   * @param {Record<string, any>[]} items - The search result items.
+   * @returns {Record<string, any>[]} - The extracted document details.
+   */
   private getDocumentDetails(
     items: Record<string, any>[]
   ): Record<string, any>[] {
     return items.map((item) => {
       const document = item.document;
       const itemType = item.itemType || 'DOCUMENT';
+
       return {
         documentId: document.id,
         name: document.title,
@@ -124,6 +143,11 @@ export default class CollectionsManager {
     });
   }
 
+  /**
+   * Creates a new collection with the given name.
+   * @param {string} collectionName - The name of the collection to create.
+   * @returns {Promise<CollectionResponse>} - The response from the API.
+   */
   private async createCollection(
     collectionName: string
   ): Promise<CollectionResponse> {
@@ -138,27 +162,41 @@ export default class CollectionsManager {
       return { errorCode: 'NAME_EXISTS', id: response.data.id };
     }
 
-    this.logRequestDetails(response);
     return response.data;
   }
 
+  /**
+   * Retrieves all collections.
+   * @returns {Promise<Collection[]>} - A list of all collections.
+   */
   private async getAllCollections(): Promise<Collection[]> {
     const url = this.getUrl('listcollections');
     const response = await this.client.post(url);
-    this.logRequestDetails(response);
+
     return response.data.collections;
   }
 
+  /**
+   * Finds a collection by name.
+   * @param {string} collectionName - The name of the collection to find.
+   * @returns {Promise<Collection | null>} - The found collection or null if not found.
+   */
   private async findCollection(
     collectionName: string
   ): Promise<Collection | null> {
     const collections = await this.getAllCollections();
+
     return (
       collections.find((collection) => collection.name === collectionName) ||
       null
     );
   }
 
+  /**
+   * Retrieves the items of a collection by collection ID.
+   * @param {number} collectionId - The ID of the collection to retrieve items for.
+   * @returns {Promise<Record<string, any>>} - The collection items.
+   */
   private async getCollectionItems(
     collectionId: number
   ): Promise<Record<string, any>> {
@@ -167,10 +205,16 @@ export default class CollectionsManager {
       id: collectionId,
       withItems: true
     });
-    this.logRequestDetails(response);
+
     return response.data;
   }
 
+  /**
+   * Adds items to a collection.
+   * @param {number} collectionId - The ID of the collection to add items to.
+   * @param {Record<string, any>[]} items - The items to add to the collection.
+   * @returns {Promise<Record<string, any>>} - The response from the API.
+   */
   private async addItemsToCollection(
     collectionId: number,
     items: Record<string, any>[]
@@ -180,14 +224,21 @@ export default class CollectionsManager {
 
     for (const item of items) {
       const payload = { collectionId, addedCollectionItemDescriptors: [item] };
-      const response = await this.client.post(url, payload);
-      this.logRequestDetails(response);
+      await this.client.post(url, payload);
+
       itemDescriptors.push(item);
     }
 
     return { collectionId, addedCollectionItemDescriptors: itemDescriptors };
   }
 
+  /**
+   * Deletes an item from a collection.
+   * @param {number} collectionId - The ID of the collection.
+   * @param {string | null} itemId - The ID of the item to delete.
+   * @param {string} documentId - The ID of the document to delete.
+   * @returns {Promise<Record<string, any>>} - The response from the API.
+   */
   private async deleteCollectionItem(
     collectionId: number,
     itemId: string | null,
@@ -196,17 +247,24 @@ export default class CollectionsManager {
     const url = this.getUrl('deletecollectionitem');
     const payload = { collectionId, itemId, documentId };
     const response = await this.client.post(url, payload);
-    this.logRequestDetails(response);
+
     return response.data;
   }
 
+  /**
+   * Syncs the specified collection with the search results from the provided query and filters.
+   * Adds new documents to the collection, and removes documents no longer in the search results.
+   * @param {string} collectionName - The name of the collection to sync.
+   * @param {string} query - The search query.
+   * @param {string} filters - The filters to apply to the search.
+   * @returns {Promise<Record<string, any>>} - The result of the sync operation.
+   */
   public async syncCollection(
     collectionName: string,
     query: string,
     filters: string
   ): Promise<Record<string, any>> {
-    const payload = this.createApiPayload(query, filters);
-    const responseJson = await this.callSearchApi(payload);
+    const responseJson = await this.doSearch(query, filters);
     const documentDetails = this.getDocumentDetails(responseJson.results || []);
     const searchDocumentIds = documentDetails.map((doc) => doc.documentId);
 
@@ -226,10 +284,10 @@ export default class CollectionsManager {
 
       const newDocumentIds = searchDocumentIds.filter(
         (id) => !existingDocumentIds.includes(id)
-      );
+      ) as string[];
       const oldDocumentIds = existingDocumentIds.filter(
         (id) => !searchDocumentIds.includes(id)
-      );
+      ) as string[];
 
       if (newDocumentIds.length) {
         const newDocuments = documentDetails.filter((doc) =>
@@ -266,26 +324,5 @@ export default class CollectionsManager {
     }
 
     return { error: 'Error creating collection' };
-  }
-
-  private logRequestDetails(response: any): void {
-    console.debug('Request Details:');
-    console.debug(`Endpoint: ${response.config.url}`);
-    console.debug(`Method: ${response.config.method}`);
-
-    if (response.config.headers) {
-      console.debug('Headers:');
-      Object.entries(response.config.headers).forEach(([key, value]) => {
-        console.debug(`${key}: ${value}`);
-      });
-    }
-
-    if (response.config.data) {
-      console.debug('Body:');
-      console.debug(response.config.data);
-    }
-
-    console.debug(`Response Status Code: ${response.status}`);
-    console.debug(`Response Body: ${response.data}`);
   }
 }

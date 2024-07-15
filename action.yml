@@ -12,6 +12,9 @@ inputs:
   glean-client-api-token:
     description: 'Glean client API token'
     required: true
+  glean-user-email:
+    description: 'Glean user email on whose behalf the request is intended to be made'
+    required: true
   collection-name:
     description: 'Name of the collection'
     required: true

@@ -35,20 +35,12 @@
   },
   "jest": {
     "clearMocks": true,
-    "collectCoverage": true,
-    "collectCoverageFrom": [
-      "./src/**"
-    ],
-    "coverageReporters": [
-      "json-summary",
-      "text",
-      "lcov"
-    ],
     "moduleFileExtensions": [
       "js",
       "ts"
     ],
     "preset": "ts-jest",
+    "prettierPath": null,
     "testEnvironment": "node",
     "testMatch": [
       "**/*.test.ts"

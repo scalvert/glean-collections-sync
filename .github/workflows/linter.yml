@@ -25,12 +25,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
-        id: setup-node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .node-version
-          cache: npm
+      - name: Setup Node
+        uses: volta-cli/action@v1
 
       - name: Install Dependencies
         id: install

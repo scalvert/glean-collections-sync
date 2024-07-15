@@ -35,7 +35,6 @@ jobs:
           glean-client-api-token: ${{ secrets.GLEAN_CLIENT_API_TOKEN }}
           glean-user-email: ${{ secrets.GLEAN_USER_EMAIL }}
           collection-sync-configs: '[{"name": "collection-name-1", "query": "query-1", "filters": "filters-1"}, {"name": "collection-name-2", "query": "query-2", "filters": "filters-2"}]'
-
 ```
 
 The `collection-sync-configs` input should be a JSON string representing an array of collections, each with a name, query, and filters. For example:
@@ -59,12 +58,12 @@ The `collection-sync-configs` input should be a JSON string representing an arra
 
 ## Inputs
 
-| name                     | description                                                                | required | default |
-| ------------------------ | -------------------------------------------------------------------------- | -------- | ------- |
-| `glean-client-api-url`   | <p>Glean client API URL</p>                                                | `true`   | `""`    |
-| `glean-client-api-token` | <p>Glean client API token</p>                                              | `true`   | `""`    |
-| `glean-user-email`       | <p>Glean user email on whose behalf the request is intended to be made</p> | `true`   | `""`    |
-| `collection-sync-configs`| <p>JSON array of collections, each with name, query, and filters</p>       | `true`   | `""`    |
+| name                      | description                                                                | required | default |
+| ------------------------- | -------------------------------------------------------------------------- | -------- | ------- |
+| `glean-client-api-url`    | <p>Glean client API URL</p>                                                | `true`   | `""`    |
+| `glean-client-api-token`  | <p>Glean client API token</p>                                              | `true`   | `""`    |
+| `glean-user-email`        | <p>Glean user email on whose behalf the request is intended to be made</p> | `true`   | `""`    |
+| `collection-sync-configs` | <p>JSON array of collections, each with name, query, and filters</p>       | `true`   | `""`    |
 
 <!-- action-docs-inputs source="action.yml" -->
 

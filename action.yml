@@ -1,24 +1,27 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
-
-# Add your action's branding here. This will appear on the GitHub Marketplace.
-branding:
-  icon: 'heart'
-  color: 'red'
-
-# Define your inputs here.
-inputs:
-  milliseconds:
-    description: 'Your input description here'
-    required: true
-    default: '1000'
-
-# Define your outputs here.
-outputs:
-  time:
-    description: 'Your output description here'
-
+name: 'Glean Collections Sync'
+description: 'Automatic syncing of search results into a collection in Glean'
+author: 'Steve Calvert'
 runs:
-  using: node20
-  main: dist/index.js
+  using: 'node20'
+  main: 'dist/index.js'
+
+inputs:
+  glean-client-api-url:
+    description: 'Glean client API URL'
+    required: true
+  glean-client-api-token:
+    description: 'Glean client API token'
+    required: true
+  collection-name:
+    description: 'Name of the collection'
+    required: true
+  query:
+    description: 'Search query'
+    required: false
+  filters:
+    description: 'Search filters'
+    required: false
+
+outputs:
+  result:
+    description: 'Result of the sync operation'

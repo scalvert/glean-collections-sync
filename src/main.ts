@@ -1,26 +1,23 @@
 import * as core from '@actions/core'
-import { wait } from './wait'
+import CollectionsManager from './collections-manager'
 
-/**
- * The main function for the action.
- * @returns {Promise<void>} Resolves when the action is complete.
- */
 export async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
+    const gleanClientApiUrl = core.getInput('glean-client-api-url')
+    const gleanClientApiToken = core.getInput('glean-client-api-token')
+    const collectionName = core.getInput('collection-name', { required: true })
+    const query = core.getInput('query', { required: true })
+    const filters = core.getInput('filters', { required: true })
 
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`)
+    const collectionsManager = new CollectionsManager()
+    const response = await collectionsManager.syncCollection(
+      collectionName,
+      query,
+      filters
+    )
 
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
-
-    // Set outputs for other workflow steps to use
-    core.setOutput('time', new Date().toTimeString())
+    core.setOutput('result', response)
   } catch (error) {
-    // Fail the workflow run if an error occurs
-    if (error instanceof Error) core.setFailed(error.message)
+    core.setFailed(`Action failed with error: ${error}`)
   }
 }

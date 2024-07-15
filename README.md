@@ -31,9 +31,11 @@ jobs:
       - name: Sync collections
         uses: scalvert/glean-collections-sync@v1
         with:
-          collection_name: 'your-collection-name'
-          query: 'your-query'
-          filters: 'your-filters'
+          glean-client-api-url: ${{ secrets.GLEAN_CLIENT_API_URL }}
+          glean-client-api-token: ${{ secrets.GLEAN_CLIENT_API_TOKEN }}
+          glean-user-email: ${{ secrets.GLEAN_USER_EMAIL }}
+          collection-sync-configs: '[{"name": "collection-name-1", "query": "query-1", "filters": "filters-1"}, {"name": "collection-name-2", "query": "query-2", "filters": "filters-2"}]'
+
 ```
 
 <!-- action-docs-inputs source="action.yml" -->

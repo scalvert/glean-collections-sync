@@ -1,11 +1,6 @@
 import * as core from '@actions/core';
 import CollectionsManager from './collections-manager';
-
-interface CollectionSyncConfig {
-  name: string;
-  query: string;
-  filters: string;
-}
+import { CollectionSyncConfig } from './types';
 
 export async function run(): Promise<void> {
   try {
@@ -14,9 +9,11 @@ export async function run(): Promise<void> {
     const gleanUserEmail = core.getInput('glean-user-email', {
       required: true
     });
-    const collectionsInput = core.getInput('collections', { required: true });
+    const collectionsInput = core.getInput('collection-sync-configs', {
+      required: true
+    });
 
-    const collections = JSON.parse(collectionsInput);
+    const collectionSyncConfigs = JSON.parse(collectionsInput);
 
     const collectionsManager = new CollectionsManager(
       gleanClientApiUrl,
@@ -25,13 +22,15 @@ export async function run(): Promise<void> {
     );
 
     const results = await Promise.all(
-      collections.map(async (collection: CollectionSyncConfig) => {
-        return collectionsManager.syncCollection(
-          collection.name,
-          collection.query,
-          collection.filters
-        );
-      })
+      collectionSyncConfigs.map(
+        async (collectionSyncConfig: CollectionSyncConfig) => {
+          return collectionsManager.syncCollection(
+            collectionSyncConfig.name,
+            collectionSyncConfig.query,
+            collectionSyncConfig.filters
+          );
+        }
+      )
     );
 
     core.setOutput('result', results);

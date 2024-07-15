@@ -15,7 +15,7 @@ inputs:
   glean-user-email:
     description: 'Glean user email on whose behalf the request is intended to be made'
     required: true
-  collections:
+  collection-sync-configs:
     description: 'JSON array of collections, each with name, query, and filters'
     required: true
 

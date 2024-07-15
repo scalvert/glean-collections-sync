@@ -17,3 +17,9 @@ export interface Collection {
   id: number;
   name: string;
 }
+
+export interface CollectionSyncConfig {
+  name: string;
+  query: string;
+  filters: string;
+}

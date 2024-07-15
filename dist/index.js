@@ -28719,12 +28719,13 @@ async function run() {
         const gleanUserEmail = core.getInput('glean-user-email', {
             required: true
         });
-        const collectionName = core.getInput('collection-name', { required: true });
-        const query = core.getInput('query', { required: true });
-        const filters = core.getInput('filters', { required: true });
+        const collectionsInput = core.getInput('collections', { required: true });
+        const collections = JSON.parse(collectionsInput);
         const collectionsManager = new collections_manager_1.default(gleanClientApiUrl, gleanClientApiToken, gleanUserEmail);
-        const response = await collectionsManager.syncCollection(collectionName, query, filters);
-        core.setOutput('result', response);
+        const results = await Promise.all(collections.map(async (collection) => {
+            return collectionsManager.syncCollection(collection.name, collection.query, collection.filters);
+        }));
+        core.setOutput('result', results);
     }
     catch (error) {
         core.setFailed(`Action failed with error: ${error}`);

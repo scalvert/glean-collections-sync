@@ -1,6 +1,12 @@
 import * as core from '@actions/core';
 import CollectionsManager from './collections-manager';
 
+interface CollectionSyncConfig {
+  name: string;
+  query: string;
+  filters: string;
+}
+
 export async function run(): Promise<void> {
   try {
     const gleanClientApiUrl = core.getInput('glean-client-api-url');
@@ -8,22 +14,27 @@ export async function run(): Promise<void> {
     const gleanUserEmail = core.getInput('glean-user-email', {
       required: true
     });
-    const collectionName = core.getInput('collection-name', { required: true });
-    const query = core.getInput('query', { required: true });
-    const filters = core.getInput('filters', { required: true });
+    const collectionsInput = core.getInput('collections', { required: true });
+
+    const collections = JSON.parse(collectionsInput);
 
     const collectionsManager = new CollectionsManager(
       gleanClientApiUrl,
       gleanClientApiToken,
       gleanUserEmail
     );
-    const response = await collectionsManager.syncCollection(
-      collectionName,
-      query,
-      filters
+
+    const results = await Promise.all(
+      collections.map(async (collection: CollectionSyncConfig) => {
+        return collectionsManager.syncCollection(
+          collection.name,
+          collection.query,
+          collection.filters
+        );
+      })
     );
 
-    core.setOutput('result', response);
+    core.setOutput('result', results);
   } catch (error) {
     core.setFailed(`Action failed with error: ${error}`);
   }

@@ -15,15 +15,9 @@ inputs:
   glean-user-email:
     description: 'Glean user email on whose behalf the request is intended to be made'
     required: true
-  collection-name:
-    description: 'Name of the collection'
+  collections:
+    description: 'JSON array of collections, each with name, query, and filters'
     required: true
-  query:
-    description: 'Search query'
-    required: false
-  filters:
-    description: 'Search filters'
-    required: false
 
 outputs:
   result:
